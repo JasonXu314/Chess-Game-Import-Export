@@ -1,4 +1,4 @@
-import { g } from './index.js';
+import { g, data } from './index.js';
 
 export function render(name, x, y, behavior)
 {
@@ -21,7 +21,7 @@ export function render(name, x, y, behavior)
     }
     else if (name === 'checkCircle')
     {
-
+        
     }
     else
     {

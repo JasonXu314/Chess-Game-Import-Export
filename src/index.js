@@ -27,8 +27,6 @@ export const whiteKing = {
     x: 4,
     y: 7
 }
-var check = null;
-let clickEvent = null;
 export const pieceBehavior = (e) => {
     let x = Number(e.target.getAttribute('x'));
     let y = Number(e.target.getAttribute('y'));
@@ -45,7 +43,29 @@ export const data = {
     moveCount: 0,
     prevTR: null,
     moveColor: 'white',
-    inCheck: false
+    inCheck: false,
+    clickEvent: null,
+    check: null
+};
+const connection = new WebSocket('wss://localhost:8080');
+var myMoveColor = '';
+
+connection.onopen = (evt) => {
+    connection.send('confirm');
+};
+
+connection.onmessage = (evt) => {
+    if (evt.data === 'confirm')
+    {
+        const color = 'white';
+        myMoveColor = color;
+        connection.send('confirmed');
+    }
+    if (evt.data === 'confirmed')
+    {
+        const color = 'black';
+        myMoveColor = color;
+    }
 };
 
 import { render } from './renderer.js';
@@ -83,14 +103,18 @@ window.addEventListener('load', (e) => {
                 clearInterval(loop);
             }
         }
+        if (data.clickEvent !== null)
+        {
+            board[data.moveColor === 'white' ? whiteKing.y : blackKing.y][data.moveColor === 'white' ? whiteKing.x : blackKing.x].dispatchEvent(data.clickEvent);
+            data.clickEvent = null;
+        }
         if (data.moveColor === 'white')
         {
             if (blackControl[whiteKing.y][whiteKing.x])
             {
-                if (check !== null)
+                if (data.check !== null)
                 {
-                    g.removeChild(check);
-                    check = null;
+                    return;
                 }
                 let checkCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 checkCircle.setAttribute('cx', whiteKing.x * 50 + 25);
@@ -99,16 +123,16 @@ window.addEventListener('load', (e) => {
                 checkCircle.setAttribute('fill', 'url(#grad1)');
                 checkCircle.setAttribute('id', 'checkCircle');
                 checkCircle.addEventListener('click', (e) => {
-                    clickEvent = e;
+                    data.clickEvent = e;
                 });
                 g.appendChild(checkCircle);
-                check = checkCircle;
+                data.check = checkCircle;
                 data.inCheck = true;
             }
-            else if (check !== null)
+            else if (data.check !== null)
             {
-                g.removeChild(check);
-                check = null;
+                g.removeChild(data.check);
+                data.check = null;
                 data.inCheck = false;
             }
             else
@@ -120,10 +144,9 @@ window.addEventListener('load', (e) => {
         {
             if (whiteControl[blackKing.y][blackKing.x])
             {
-                if (check !== null)
+                if (data.check !== null)
                 {
-                    g.removeChild(check);
-                    check = null;
+                    return;
                 }
                 let checkCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 checkCircle.setAttribute('cx', blackKing.x * 50 + 25);
@@ -132,27 +155,22 @@ window.addEventListener('load', (e) => {
                 checkCircle.setAttribute('fill', 'url(#grad1)');
                 checkCircle.setAttribute('id', 'checkCircle');
                 checkCircle.addEventListener('click', (e) => {
-                    clickEvent = e;
+                    data.clickEvent = e;
                 });
                 g.appendChild(checkCircle);
-                check = checkCircle;
+                data.check = checkCircle;
                 data.inCheck = true;
             }
-            else if (check !== null)
+            else if (data.check !== null)
             {
-                g.removeChild(check);
-                check = null;
+                g.removeChild(data.check);
+                data.check = null;
                 data.inCheck = false;
             }
             else
             {
                 data.inCheck = false;
             }
-        }
-        if (clickEvent !== null)
-        {
-            board[data.moveColor === 'white' ? whiteKing.y : blackKing.y][data.moveColor === 'white' ? whiteKing.x : blackKing.x].dispatchEvent(clickEvent);
-            clickEvent = null;
         }
         let material = Number(Utilities.countMaterial(board));
         document.getElementById('materialcounter').textContent = 'Material: ' + (material > 0 ? '+' : '') + String(material);
