@@ -201,6 +201,10 @@ window.addEventListener('click', (e) => {
         {
             g.removeChild(shownLocations.shift());
         }
+        for (let i = 0; i < 64; i++)
+        {
+            moveLocations[i % 8][Math.floor(i/8)] = null;
+        }
     }
 });
 

@@ -15,7 +15,7 @@ export function render(name, x, y, behavior)
     {
         if (behavior === undefined)
         {
-            console.log('You must provide behavior for the moveLocation');
+            console.error('You must provide behavior for the moveLocation');
             return;
         }
         let moveLocation = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -30,7 +30,6 @@ export function render(name, x, y, behavior)
             {
                 moveLocations[i % 8][Math.floor(i/8)] = null;
             }
-            console.table(moveLocations);
         });
         g.appendChild(moveLocation);
         moveLocations[y][x] = moveLocation;
@@ -76,7 +75,7 @@ export function render(name, x, y, behavior)
     {
         if (behavior === undefined)
         {
-            console.log('You must provide behavior for the piece!');
+            console.error('You must provide behavior for the piece!');
             return;
         }
         let piece = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -95,9 +94,9 @@ export function render(name, x, y, behavior)
         piece.setAttribute('onclick', '"event.stopPropogation()"');
         piece.addEventListener('mousedown', behavior);
         piece.addEventListener('mousedown', (e) => {
-            dragging = true;
-            if (data.moveColor === Utilities.getColor(piece))
+            if (data.moveColor === Utilities.getColor(piece) && !dragging)
             {
+                dragging = true;
                 g.removeChild(piece);
                 g.appendChild(piece);
                 piece.addEventListener('mousemove', test);
