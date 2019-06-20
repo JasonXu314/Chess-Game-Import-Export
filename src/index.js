@@ -1,7 +1,33 @@
 export const board = [[], [], [], [], [], [], [], []];
+
+/**
+ * The 2D array containing all of the displayed possible move locations
+ * @type {Array<Array<SVGCircleElement>>}
+ */
+export const moveLocations = [[], [], [], [], [], [], [], []];
+
+/**
+ * The 2D array representing white's zone of control
+ * @type {Array<Array<boolean>>}
+ */
 var whiteControl = [[], [], [], [], [], [], [], []];
+
+/**
+ * The 2D array representing black's zone of control
+ * @type {Array<Array<boolean>>}
+ */
 var blackControl = [[], [], [], [], [], [], [], []];
-var boardElement;
+
+/**
+ * The SVG Element representing the board
+ * @type {HTMLElement}
+ */
+export var boardElement;
+
+/**
+ * The Element representing the graphics in the SVG
+ * @type {HTMLElement}
+ */
 export var g;
 export var shownPiece = null;
 export const shownLocations= [];
@@ -27,6 +53,11 @@ export const whiteKing = {
     x: 4,
     y: 7
 }
+
+/**
+ * Governs the behavior of a piece
+ * @param {MouseEvent} e 
+ */
 export const pieceBehavior = (e) => {
     let x = Number(e.target.getAttribute('x'));
     let y = Number(e.target.getAttribute('y'));
@@ -45,28 +76,41 @@ export const data = {
     moveColor: 'white',
     inCheck: false,
     clickEvent: null,
-    check: null
+    check: null,
+    hoverTile: null,
+    tiles: []
 };
-const connection = new WebSocket('wss://localhost:8080');
-var myMoveColor = '';
+// try
+// {
+//     const connection = new WebSocket('wss://localhost:8080');
+//     var myMoveColor = '';
 
-connection.onopen = (evt) => {
-    connection.send('confirm');
-};
+//     connection.onopen = (evt) => {
+//         connection.send('confirm');
+//     };
 
-connection.onmessage = (evt) => {
-    if (evt.data === 'confirm')
-    {
-        const color = 'white';
-        myMoveColor = color;
-        connection.send('confirmed');
-    }
-    if (evt.data === 'confirmed')
-    {
-        const color = 'black';
-        myMoveColor = color;
-    }
-};
+//     connection.onmessage = (evt) => {
+//         if (evt.data === 'confirm')
+//         {
+//             const color = 'white';
+//             myMoveColor = color;
+//             connection.send('confirmed');
+//         }
+//         if (evt.data === 'confirmed')
+//         {
+//             const color = 'black';
+//             myMoveColor = color;
+//         }
+//     };
+// }
+// catch (err)
+// {
+//     let items = Array.from(document.body.children);
+//     items.forEach(item => {
+//         document.body.removeChild(item);
+//     });
+//     document.write('Connection Refused. Please check your internet connection.');
+// }
 
 import { render } from './renderer.js';
 import { showPawn } from './pawn.js';
@@ -83,24 +127,18 @@ window.addEventListener('load', (e) => {
     g = document.getElementById('g');
     for (let i = 0; i < 64; i++)
     {
-        let tile = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        tile.setAttribute('x', Math.floor(i/8) * 50);
-        tile.setAttribute('y', (i % 8) * 50);
-        tile.setAttribute('width', '50');
-        tile.setAttribute('height', '50');
-        tile.setAttribute('class', 'tile');
-        tile.setAttribute('fill', (Math.floor(i/8) + i % 8) % 2 == 0 ? 'white' : 'black');
-        g.appendChild(tile);
+        data.tiles.push(render('tile', Math.floor(i/8) * 50, (i % 8) * 50));
+        moveLocations[i % 8][Math.floor(i/8)] = null;
     }
     init();
     updateControls();
-    let loop = setInterval(() => {
+    let daemon = setInterval(() => {
         if (data.inCheck)
         {
             if (Checks.isCheckmate())
             {
                 alert('Game Over!\n' + (data.moveColor === 'white' ? "Black" : "White") + ' wins!');
-                clearInterval(loop);
+                clearInterval(daemon);
             }
         }
         if (data.clickEvent !== null)
@@ -116,18 +154,7 @@ window.addEventListener('load', (e) => {
                 {
                     return;
                 }
-                let checkCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                checkCircle.setAttribute('cx', whiteKing.x * 50 + 25);
-                checkCircle.setAttribute('cy', whiteKing.y * 50 + 25);
-                checkCircle.setAttribute('r', 25);
-                checkCircle.setAttribute('fill', 'url(#grad1)');
-                checkCircle.setAttribute('id', 'checkCircle');
-                checkCircle.addEventListener('click', (e) => {
-                    data.clickEvent = e;
-                });
-                g.appendChild(checkCircle);
-                data.check = checkCircle;
-                data.inCheck = true;
+                render('checkCircle', whiteKing.x, whiteKing.y);
             }
             else if (data.check !== null)
             {
@@ -148,18 +175,7 @@ window.addEventListener('load', (e) => {
                 {
                     return;
                 }
-                let checkCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                checkCircle.setAttribute('cx', blackKing.x * 50 + 25);
-                checkCircle.setAttribute('cy', blackKing.y * 50 + 25);
-                checkCircle.setAttribute('r', 25);
-                checkCircle.setAttribute('fill', 'url(#grad1)');
-                checkCircle.setAttribute('id', 'checkCircle');
-                checkCircle.addEventListener('click', (e) => {
-                    data.clickEvent = e;
-                });
-                g.appendChild(checkCircle);
-                data.check = checkCircle;
-                data.inCheck = true;
+                render('checkCircle', blackKing.x, blackKing.y);
             }
             else if (data.check !== null)
             {
@@ -174,10 +190,10 @@ window.addEventListener('load', (e) => {
         }
         let material = Number(Utilities.countMaterial(board));
         document.getElementById('materialcounter').textContent = 'Material: ' + (material > 0 ? '+' : '') + String(material);
-    }, 250);
+    }, 150);
 });
 
-document.addEventListener('click', (e) => {
+window.addEventListener('click', (e) => {
     if (e.target === document.body || e.target === boardElement || e.target.getAttribute('class') === 'tile')
     {
         shownPiece = null;
@@ -188,6 +204,14 @@ document.addEventListener('click', (e) => {
     }
 });
 
+/**
+ * Displays the move options of the given piece
+ * 
+ * @param {Number} x the x value of the piece
+ * @param {Number} y the y value of the piece
+ * @param {String} piece the type of piece (pawn, bishop, etc.)
+ * @param {String} color the color of the piece
+ */
 function showPlaces(x, y, piece, color)
 {
     if (color !== data.moveColor)
@@ -223,6 +247,9 @@ export function updateControls()
     blackControl = Control.updateBlack(board);
 }
 
+/**
+ * Initializes the board
+ */
 function init()
 {
     for (let i = 0; i < 8; i++)
