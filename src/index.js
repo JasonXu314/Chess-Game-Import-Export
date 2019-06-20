@@ -133,14 +133,6 @@ window.addEventListener('load', (e) => {
     init();
     updateControls();
     let daemon = setInterval(() => {
-        if (data.inCheck)
-        {
-            if (Checks.isCheckmate())
-            {
-                alert('Game Over!\n' + (data.moveColor === 'white' ? "Black" : "White") + ' wins!');
-                clearInterval(daemon);
-            }
-        }
         if (data.clickEvent !== null)
         {
             board[data.moveColor === 'white' ? whiteKing.y : blackKing.y][data.moveColor === 'white' ? whiteKing.x : blackKing.x].dispatchEvent(data.clickEvent);
@@ -188,9 +180,24 @@ window.addEventListener('load', (e) => {
                 data.inCheck = false;
             }
         }
+        if (data.inCheck)
+        {
+            let lastTD = document.getElementById('moveHistory').lastChild.lastChild;
+            if (Checks.isCheckmate())
+            {
+                lastTD.textContent += '#';
+                alert('Game Over!\n' + (data.moveColor === 'white' ? "Black" : "White") + ' wins!');
+                clearInterval(daemon);
+                return;
+            }
+            if (lastTD.textContent.slice(lastTD.textContent.length - 1) !== '+')
+            {
+                lastTD.textContent += '+';
+            }
+        }
         let material = Number(Utilities.countMaterial(board));
         document.getElementById('materialcounter').textContent = 'Material: ' + (material > 0 ? '+' : '') + String(material);
-    }, 150);
+    }, 50);
 });
 
 window.addEventListener('click', (e) => {

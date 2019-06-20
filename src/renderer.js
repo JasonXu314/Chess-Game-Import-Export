@@ -80,8 +80,8 @@ export function render(name, x, y, behavior)
         }
         let piece = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         let test = (e) => {
-            piece.setAttribute('x', e.offsetX - 25);
-            piece.setAttribute('y', e.offsetY - 25);
+            piece.setAttribute('x', e.pageX - 75);
+            piece.setAttribute('y', e.pageY - 75);
         };
         let startx = -1;
         let dragging = false;
@@ -108,9 +108,9 @@ export function render(name, x, y, behavior)
             if (dragging)
             {
                 piece.removeEventListener('mousemove', test);
-                if (moveLocations[Math.floor(e.offsetY/50)][Math.floor(e.offsetX/50)] !== null)
+                if (moveLocations[Math.floor(e.pageY/50 - 1)][Math.floor(e.pageX/50 - 1)] !== null)
                 {
-                    moveLocations[Math.floor(e.offsetY/50)][Math.floor(e.offsetX/50)].dispatchEvent(new MouseEvent('click'));
+                    moveLocations[Math.floor(e.pageY/50 - 1)][Math.floor(e.pageX/50 - 1)].dispatchEvent(new MouseEvent('click'));
                 }
                 else
                 {
