@@ -201,7 +201,8 @@ window.addEventListener('load', (e) => {
 });
 
 window.addEventListener('click', (e) => {
-    if (e.target === document.body || e.target === boardElement || e.target.getAttribute('class') === 'tile')
+    console.log(e);
+    if (e.target === document.body || e.target === boardElement || e.target.getAttribute('class') === 'tile' || e.target === document.getElementsByName('html')[0])
     {
         shownPiece = null;
         for (let i = 0; i < shownLocations.length;)

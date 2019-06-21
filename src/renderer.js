@@ -1,4 +1,4 @@
-import { moveLocations, g, data, board } from './index.js';
+import { moveLocations, g, data, board, boardElement } from './index.js';
 import * as Utilities from './utility.js';
 
 /**
@@ -80,8 +80,8 @@ export function render(name, x, y, behavior)
         }
         let piece = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         let test = (e) => {
-            piece.setAttribute('x', e.pageX - 75);
-            piece.setAttribute('y', e.pageY - 75);
+            piece.setAttribute('x', e.clientX - 75);
+            piece.setAttribute('y', e.clientY - 75);
         };
         let startx = -1;
         let dragging = false;
@@ -99,7 +99,7 @@ export function render(name, x, y, behavior)
                 dragging = true;
                 g.removeChild(piece);
                 g.appendChild(piece);
-                piece.addEventListener('mousemove', test);
+                boardElement.addEventListener('mousemove', test);
                 startx = piece.getAttribute('x');
                 starty = piece.getAttribute('y');
             }
@@ -107,15 +107,23 @@ export function render(name, x, y, behavior)
         piece.addEventListener('mouseup', (e) => {
             if (dragging)
             {
-                piece.removeEventListener('mousemove', test);
-                if (moveLocations[Math.floor(e.pageY/50 - 1)][Math.floor(e.pageX/50 - 1)] !== null)
+                boardElement.removeEventListener('mousemove', test);
+                if (moveLocations[Math.floor(e.pageY/50 - 1)][Math.floor(e.clientX/50 - 1)] !== null)
                 {
-                    moveLocations[Math.floor(e.pageY/50 - 1)][Math.floor(e.pageX/50 - 1)].dispatchEvent(new MouseEvent('click'));
+                    moveLocations[Math.floor(e.pageY/50 - 1)][Math.floor(e.clientY/50 - 1)].dispatchEvent(new MouseEvent('click'));
+                    for (let i = 0; i < 64; i++)
+                    {
+                        moveLocations[i % 8][Math.floor(i/8)] = null;
+                    }
                 }
                 else
                 {
                     piece.setAttribute('x', startx);
                     piece.setAttribute('y', starty);
+                    for (let i = 0; i < 64; i++)
+                    {
+                        moveLocations[i % 8][Math.floor(i/8)] = null;
+                    }
                 }
                 dragging = false;
             }
