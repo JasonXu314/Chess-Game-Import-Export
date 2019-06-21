@@ -104,13 +104,13 @@ export function render(name, x, y, behavior)
                 starty = piece.getAttribute('y');
             }
         });
-        piece.addEventListener('mouseup', (e) => {
+        boardElement.addEventListener('mouseup', (e) => {
             if (dragging)
             {
                 boardElement.removeEventListener('mousemove', test);
-                if (moveLocations[Math.floor(e.pageY/50 - 1)][Math.floor(e.clientX/50 - 1)] !== null)
+                if (moveLocations[Math.floor(e.clientY/50 - 1)][Math.floor(e.clientX/50 - 1)] !== null)
                 {
-                    moveLocations[Math.floor(e.pageY/50 - 1)][Math.floor(e.clientY/50 - 1)].dispatchEvent(new MouseEvent('click'));
+                    moveLocations[Math.floor(e.clientY/50 - 1)][Math.floor(e.clientX/50 - 1)].dispatchEvent(new MouseEvent('click'));
                     for (let i = 0; i < 64; i++)
                     {
                         moveLocations[i % 8][Math.floor(i/8)] = null;
