@@ -59,8 +59,8 @@ export const whiteKing = {
  * @param {MouseEvent} e 
  */
 export const pieceBehavior = (e) => {
-    let x = Number(e.target.getAttribute('x'));
-    let y = Number(e.target.getAttribute('y'));
+    let x = Math.floor(Number(e.target.getAttribute('x')));
+    let y = Math.floor(Number(e.target.getAttribute('y')));
     let piece = Utilities.getPiece(e.target);
     let color = Utilities.getColor(e.target);
     for (let i = 0; i < shownLocations.length;)
@@ -70,6 +70,7 @@ export const pieceBehavior = (e) => {
     shownPiece = e.target;
     showPlaces(x, y, piece, color);
 };
+
 export const data = {
     moveCount: 0,
     prevTR: null,
@@ -201,7 +202,7 @@ window.addEventListener('load', (e) => {
 });
 
 window.addEventListener('click', (e) => {
-    if (e.target === document.body || e.target === boardElement || e.target.getAttribute('class') === 'tile' || e.target === document.getElementsByName('html')[0])
+    if (e.target === boardElement || e.target.getAttribute('class') === 'tile' || e.target.nodeName === 'HTML')
     {
         shownPiece = null;
         for (let i = 0; i < shownLocations.length;)

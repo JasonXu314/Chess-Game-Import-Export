@@ -80,6 +80,18 @@ export function render(name, x, y, behavior)
         }
         let piece = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         let test = (e) => {
+            if (e.clientX >= 450  || e.clientY >= 450 || e.clientX <= 50 || e.clientY <= 50)
+            {
+                document.removeEventListener('mousemove', test);
+                piece.setAttribute('x', startx);
+                piece.setAttribute('y', starty);
+                for (let i = 0; i < 64; i++)
+                {
+                    moveLocations[i % 8][Math.floor(i/8)] = null;
+                }
+                dragging = false;
+                return;
+            }
             piece.setAttribute('x', e.clientX - 75);
             piece.setAttribute('y', e.clientY - 75);
         };
@@ -99,7 +111,7 @@ export function render(name, x, y, behavior)
                 dragging = true;
                 g.removeChild(piece);
                 g.appendChild(piece);
-                boardElement.addEventListener('mousemove', test);
+                document.addEventListener('mousemove', test);
                 startx = piece.getAttribute('x');
                 starty = piece.getAttribute('y');
             }
@@ -107,23 +119,19 @@ export function render(name, x, y, behavior)
         boardElement.addEventListener('mouseup', (e) => {
             if (dragging)
             {
-                boardElement.removeEventListener('mousemove', test);
+                document.removeEventListener('mousemove', test);
                 if (moveLocations[Math.floor(e.clientY/50 - 1)][Math.floor(e.clientX/50 - 1)] !== null)
                 {
                     moveLocations[Math.floor(e.clientY/50 - 1)][Math.floor(e.clientX/50 - 1)].dispatchEvent(new MouseEvent('click'));
-                    for (let i = 0; i < 64; i++)
-                    {
-                        moveLocations[i % 8][Math.floor(i/8)] = null;
-                    }
                 }
                 else
                 {
                     piece.setAttribute('x', startx);
                     piece.setAttribute('y', starty);
-                    for (let i = 0; i < 64; i++)
-                    {
-                        moveLocations[i % 8][Math.floor(i/8)] = null;
-                    }
+                }
+                for (let i = 0; i < 64; i++)
+                {
+                    moveLocations[i % 8][Math.floor(i/8)] = null;
                 }
                 dragging = false;
             }
